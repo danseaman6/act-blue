@@ -1,7 +1,15 @@
-import { useState } from "react";
-import { Grid, Input } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Button, InputAdornment, OutlinedInput } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import moment from "moment";
 import styled from "styled-components";
+import { Row, Column } from "./ui.ts";
+import { CounterInput } from "./CounterInput.tsx";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import DateRangeIcon from "@mui/icons-material/DateRange";
+import PlaceIcon from "@mui/icons-material/Place";
 
 type TBand = Partial<{
   name: string;
@@ -27,13 +35,108 @@ type State = Partial<{
   cardNumber: string;
   expiration: string;
   cvv: string;
+  selectedTickets: {
+    [ticketType: string]: number;
+  };
   total: number;
-  tickets: TTicket[];
 }>;
+
+const Title = styled.h3`
+  font-weight: bold;
+  font-size: 36px;
+  line-height: 36px;
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  margin: 0;
+  color: #252b32;
+`;
+
+const Subtitle = styled.h3`
+  font-weight: normal;
+  font-size: 20px;
+  line-height: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0;
+  color: #4b5461;
+`;
+
+const Ticket = styled(Row)`
+  padding-bottom: 40px;
+  border-bottom: 2px solid #797a7a;
+`;
+
+const TicketTitle = styled.p`
+  font-size: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-transform: uppercase;
+  margin: 0;
+  color: #797a7a;
+`;
+
+const Total = styled.p`
+  flex: 1 0 auto;
+  font-size: 30px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-transform: uppercase;
+  margin: 0;
+  color: #797a7a;
+`;
+
+const TotalNumber = styled(Total)`
+  flex: 0 0 auto;
+  font-weight: bold;
+`;
+
+const Copy = styled.p`
+  font-size: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+`;
 
 const Image = styled.img`
   width: 100%;
-  max-width: 600px;
+  max-width: 450px;
+  border-radius: 4px;
+`;
+
+const TicketFormColumn = styled(Column)`
+  max-width: 710px;
+  background-color: #f7f8fa;
+  border-radius: 4px;
+  padding: 40px 60px;
+  align-items: stretch;
+`;
+
+const FormField = styled(OutlinedInput)`
+  flex: 1;
+  background-color: #ffffff;
+  border: 2px solid #797a7a;
+  border-radius: 0;
+  .MuiOutlinedInput-notchedOutline {
+    border: none;
+  }
+`;
+
+const DateField = styled(DatePicker)`
+  flex: 1;
+  background-color: #ffffff;
+  border: 2px solid #797a7a;
+  border-radius: 0;
+  .MuiOutlinedInput-notchedOutline {
+    border: none;
+  }
+`;
+
+const PurchaseButton = styled(Button)`
+  width: 100%;
+  height: 50px;
+  background-color: #606060;
+`;
+
+const ButtonTitle = styled.p`
+  font-size: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0;
+  color: #ffffff;
 `;
 
 function BandForm({ band }: { band: TBand }) {
@@ -43,142 +146,183 @@ function BandForm({ band }: { band: TBand }) {
     return date.format("dddd, MMMM D");
   };
 
+  const formatCardNumber = (value: string) => {
+    const v = value
+      .replace(/\s+/g, "")
+      .replace(/[^0-9]/gi, "")
+      .substr(0, 16);
+    const parts = [];
+
+    for (let i = 0; i < v.length; i += 4) {
+      parts.push(v.substr(i, 4));
+    }
+
+    return parts.length > 1 ? parts.join(" ") : value;
+  };
+
+  const formatCVV = (value: string) => {
+    return value.replace(/[^0-9]/gi, "").substr(0, 3);
+  };
+
   const handleTextChange = (name: string, value: string) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleTicketChange = (target: EventTarget, ticket: TTicket) => {
+  const handleTicketChange = (ticketType: string, value: number) => {
+    console.log(value);
     setFormData({
       ...formData,
-      total: formData.total ? formData.total + ticket.cost : ticket.cost,
-      tickets: formData.tickets ? [...formData.tickets, ticket] : [ticket],
+      selectedTickets: {
+        ...formData.selectedTickets,
+        [ticketType]: value,
+      },
     });
   };
 
-  return (
-    <Grid container item md={12} spacing={8}>
-      <Grid container item md={12}>
-        <Grid container item md={4} direction="column">
-          <h1>{band.name}</h1>
-          <h2>{displayDate()}</h2>
-          <h2>{band.location}</h2>
-        </Grid>
-      </Grid>
-      <Grid container item md={12} spacing={24}>
-        <Grid container item md={4} direction="column">
-          <Image src={band.imgUrl} alt={band.name} />
-          <div
-            dangerouslySetInnerHTML={{ __html: band.description_blurb ?? "" }}
-          />
-        </Grid>
-        <Grid container item md={8} spacing={8}>
-          <Grid item md={12}>
-            <h2>Select Tickets</h2>
-          </Grid>
-          {band.ticketTypes?.map((ticket: TTicket) => (
-            <Grid container item md={12} alignItems="center">
-              <Grid item md={8} direction="column">
-                <h3>{ticket.name}</h3>
-                <p>{ticket.description}</p>
-                <h3>{`$${ticket?.cost ? ticket.cost / 100 : "-"}`}</h3>
-              </Grid>
-              <Grid item md={4}>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  onChange={({ target }) => handleTicketChange(target, ticket)}
-                />
-              </Grid>
-            </Grid>
-          ))}
+  useEffect(() => {
+    const total = Object.entries(formData.selectedTickets ?? {}).reduce(
+      (acc, [ticketType, quantity]) => {
+        const ticket = band.ticketTypes?.find((t) => t.type === ticketType);
+        return acc + (ticket?.cost ?? 0) * quantity;
+      },
+      0
+    );
+    setFormData({ ...formData, total });
+  }, [band.ticketTypes, formData]);
 
-          <Grid container item md={12} justifyContent="space-around">
-            <Grid item md={1} justifyContent="flex-start">
-              <h2>TOTAL</h2>
-            </Grid>
-            <Grid item md={1} justifyContent="flex-end">
-              <h2>{`$${formData.total ? formData.total / 100 : "-"}`}</h2>
-            </Grid>
-          </Grid>
-          <Grid item md={12} spacing={4}>
-            <Grid
-              item
-              direction="row"
-              justifyContent="space-between"
-              alignItems="space-between"
-            >
-              <Input
-                name="firstName"
-                type="text"
-                placeholder="First Name"
-                value={formData.firstName}
-                onChange={({ target }) =>
-                  handleTextChange(target.name, target.value)
-                }
-              />
-              <Input
-                name="lastName"
-                type="text"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={({ target }) =>
-                  handleTextChange(target.name, target.value)
-                }
-              />
-            </Grid>
-            <Grid item direction="row">
-              <Input
-                name="address"
-                type="text"
-                placeholder="Address"
-                onChange={({ target }) =>
-                  handleTextChange(target.name, target.value)
-                }
-              />
-            </Grid>
-          </Grid>
-          <Grid item md={12}>
-            <strong>Payment Details</strong>
-          </Grid>
-          <Grid item md={12} spacing={4}>
-            <Grid
-              item
-              direction="row"
-              justifyContent="space-between"
-              alignItems="space-between"
-            >
-              <Input
-                name="cardNumber"
-                type="text"
-                placeholder="0000 0000 0000 0000"
-                onChange={({ target }) =>
-                  handleTextChange(target.name, target.value)
-                }
-              />
-            </Grid>
-            <Grid item direction="row">
-              {/*should be a date picker*/}
-              <Input
-                name="date"
-                type="text"
-                placeholder="MM/YY"
-                onChange={({ target }) =>
-                  handleTextChange(target.name, target.value)
-                }
-              />
-              <Input
-                name="cvv"
-                type="text"
-                placeholder="CVV"
-                onChange={({ target }) =>
-                  handleTextChange(target.name, target.value)
-                }
-              />
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-    </Grid>
+  return (
+    <form>
+      <Column gap="48px">
+        <Row>
+          <Column gap="16px">
+            <Title>{band.name}</Title>
+            <Row gap="8px">
+              <DateRangeIcon />
+              <Subtitle>{displayDate()}</Subtitle>
+            </Row>
+            <Row gap="8px">
+              <PlaceIcon />
+              <Subtitle>{band.location}</Subtitle>
+            </Row>
+          </Column>
+        </Row>
+        <Row gap={"48px"}>
+          <Column>
+            <Image src={band.imgUrl} alt={band.name} />
+            <Copy
+              dangerouslySetInnerHTML={{ __html: band.description_blurb ?? "" }}
+            />
+          </Column>
+          <TicketFormColumn gap="40px">
+            <Row>
+              <h2>Select Tickets</h2>
+            </Row>
+            {band.ticketTypes?.map((ticket: TTicket) => (
+              <Ticket gap="90px" key={ticket.name}>
+                <Column>
+                  <TicketTitle>{ticket.name}</TicketTitle>
+                  <Copy>{ticket.description}</Copy>
+                  <TicketTitle>
+                    {`$${ticket?.cost ? ticket.cost / 100 : "0"}`}
+                  </TicketTitle>
+                </Column>
+                <Column>
+                  <CounterInput
+                    value={formData.selectedTickets?.[ticket.type] ?? 0}
+                    onChange={(value) => handleTicketChange(ticket.type, value)}
+                  />
+                </Column>
+              </Ticket>
+            ))}
+
+            <Row>
+              <Total>TOTAL</Total>
+              <TotalNumber>{`$${
+                formData.total ? formData.total / 100 : "0"
+              }`}</TotalNumber>
+            </Row>
+            <Column gap="16px">
+              <Row gap="12px">
+                <FormField
+                  name="firstName"
+                  type="text"
+                  placeholder="First Name"
+                  value={formData.firstName}
+                  onChange={({ target }) =>
+                    handleTextChange(target.name, target.value)
+                  }
+                />
+                <FormField
+                  name="lastName"
+                  type="text"
+                  placeholder="Last Name"
+                  value={formData.lastName}
+                  onChange={({ target }) =>
+                    handleTextChange(target.name, target.value)
+                  }
+                />
+              </Row>
+              <Row>
+                <FormField
+                  name="address"
+                  type="text"
+                  placeholder="Address"
+                  onChange={({ target }) =>
+                    handleTextChange(target.name, target.value)
+                  }
+                />
+              </Row>
+            </Column>
+            <Row>
+              <strong>Payment Details</strong>
+            </Row>
+            <Column gap="16px">
+              <Row>
+                <FormField
+                  name="cardNumber"
+                  type="text"
+                  placeholder="0000 0000 0000 0000"
+                  value={formatCardNumber(formData.cardNumber ?? "")}
+                  onChange={({ target }) =>
+                    handleTextChange(target.name, target.value)
+                  }
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <CreditCardIcon />
+                    </InputAdornment>
+                  }
+                />
+              </Row>
+              <Row gap="12px">
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DateField
+                    format="MM/YY"
+                    views={["month", "year"]}
+                    value={formData.expiration}
+                    onChange={(value: any) =>
+                      handleTextChange("expiration", value ?? "")
+                    }
+                  />
+                </LocalizationProvider>
+                <FormField
+                  name="cvv"
+                  type="text"
+                  placeholder="CVV"
+                  // smarter card forms can handle 3 or 4 numbers based on Amex or not
+                  value={formatCVV(formData.cvv ?? "")}
+                  onChange={({ target }) =>
+                    handleTextChange(target.name, target.value)
+                  }
+                />
+              </Row>
+            </Column>
+            <PurchaseButton>
+              <ButtonTitle>Get Tickets</ButtonTitle>
+            </PurchaseButton>
+          </TicketFormColumn>
+        </Row>
+      </Column>
+    </form>
   );
 }
 

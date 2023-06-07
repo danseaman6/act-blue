@@ -1,23 +1,35 @@
 import skaBand from "./band-json/ska-band.json";
 import kpopBand from "./band-json/kpop-band.json";
 import punkBand from "./band-json/punk-band.json";
-import { Grid } from "@mui/material";
 import { styled } from "styled-components";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 import BandForm from "./BandForm";
 
-const Page = styled(Grid)`
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#606060",
+    },
+  },
+});
+
+const Page = styled.div`
   width: 100vw;
-  max-width: 3400px;
-  margin: 0 5%;
+  max-width: 1440px;
+  padding-top: 100px;
+  padding-left: 100px;
+  padding-right: 100px;
 `;
 
 function App() {
   const bands = [skaBand, kpopBand, punkBand];
   return (
-    <Page container md={12}>
-      <BandForm band={bands[1]} />
-    </Page>
+    <ThemeProvider theme={theme}>
+      <Page>
+        <BandForm band={bands[1]} />
+      </Page>
+    </ThemeProvider>
   );
 }
 
