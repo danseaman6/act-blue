@@ -22,9 +22,9 @@ const NumberInput = styled(OutlinedInput)`
 `;
 
 const IncrementButton = styled(Button)`
-  width: 40px;
+  max-width: 35px;
   height: 35px;
-  background-color: #ffffff;
+  background-color: #ebebeb;
   border-radius: 0;
   border: 1px solid #797a7a;
   border-top: 2px solid #797a7a;
@@ -32,9 +32,9 @@ const IncrementButton = styled(Button)`
 `;
 
 const DecrementButton = styled(Button)`
-  width: 40px;
+  max-width: 35px;
   height: 35px;
-  background-color: #ffffff;
+  background-color: #ebebeb;
   border-radius: 0;
   border: 1px solid #797a7a;
   border-bottom: 2px solid #797a7a;

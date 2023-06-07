@@ -43,7 +43,7 @@ type State = Partial<{
 
 const Title = styled.h3`
   font-weight: bold;
-  font-size: 36px;
+  font-size: 48px;
   line-height: 36px;
   font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -57,12 +57,32 @@ const Subtitle = styled.h3`
   line-height: 20px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   margin: 0;
-  color: #4b5461;
+  color: #7d8ca1;
+`;
+
+const FormTitle = styled.h3`
+  font-weight: bold;
+  font-size: 36px;
+  line-height: 36px;
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  margin: 0;
+  color: #252b32;
+`;
+
+const FormSubtitle = styled.h3`
+  font-weight: bold;
+  font-size: 24px;
+  line-height: 36px;
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  margin: 0;
+  color: #252b32;
 `;
 
 const Ticket = styled(Row)`
   padding-bottom: 40px;
-  border-bottom: 2px solid #797a7a;
+  border-bottom: 2px solid #d5d6d8;
 `;
 
 const TicketTitle = styled.p`
@@ -84,18 +104,35 @@ const Total = styled.p`
 
 const TotalNumber = styled(Total)`
   flex: 0 0 auto;
-  font-weight: bold;
+  font-weight: 600;
 `;
 
 const Copy = styled.p`
-  font-size: 12px;
+  font-size: 14px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #7d8ca1;
+
+  p {
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: bold;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
 `;
 
 const Image = styled.img`
   width: 100%;
   max-width: 450px;
   border-radius: 4px;
+  //aspect-ratio: 450/350;
+`;
+
+const ImageColumn = styled(Column)`
+  flex: 1;
 `;
 
 const TicketFormColumn = styled(Column)`
@@ -108,6 +145,7 @@ const TicketFormColumn = styled(Column)`
 
 const FormField = styled(OutlinedInput)`
   flex: 1;
+  font-size: 20px;
   background-color: #ffffff;
   border: 2px solid #797a7a;
   border-radius: 0;
@@ -124,6 +162,9 @@ const DateField = styled(DatePicker)`
   .MuiOutlinedInput-notchedOutline {
     border: none;
   }
+  .MuiInputBase-root {
+    font-size: 20px;
+  }
 `;
 
 const PurchaseButton = styled(Button)`
@@ -137,6 +178,7 @@ const ButtonTitle = styled.p`
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   margin: 0;
   color: #ffffff;
+  text-transform: capitalize;
 `;
 
 function BandForm({ band }: { band: TBand }) {
@@ -194,28 +236,30 @@ function BandForm({ band }: { band: TBand }) {
     <form>
       <Column gap="48px">
         <Row>
-          <Column gap="16px">
+          <Column gap="24px">
             <Title>{band.name}</Title>
-            <Row gap="8px">
-              <DateRangeIcon />
-              <Subtitle>{displayDate()}</Subtitle>
-            </Row>
-            <Row gap="8px">
-              <PlaceIcon />
-              <Subtitle>{band.location}</Subtitle>
-            </Row>
+            <Column gap="12px">
+              <Row gap="8px">
+                <DateRangeIcon />
+                <Subtitle>{displayDate()}</Subtitle>
+              </Row>
+              <Row gap="8px">
+                <PlaceIcon />
+                <Subtitle>{band.location}</Subtitle>
+              </Row>
+            </Column>
           </Column>
         </Row>
         <Row gap={"48px"}>
-          <Column>
+          <ImageColumn>
             <Image src={band.imgUrl} alt={band.name} />
             <Copy
               dangerouslySetInnerHTML={{ __html: band.description_blurb ?? "" }}
             />
-          </Column>
+          </ImageColumn>
           <TicketFormColumn gap="40px">
             <Row>
-              <h2>Select Tickets</h2>
+              <FormTitle>Select Tickets</FormTitle>
             </Row>
             {band.ticketTypes?.map((ticket: TTicket) => (
               <Ticket gap="90px" key={ticket.name}>
@@ -273,48 +317,50 @@ function BandForm({ band }: { band: TBand }) {
                 />
               </Row>
             </Column>
-            <Row>
-              <strong>Payment Details</strong>
-            </Row>
-            <Column gap="16px">
+            <Column gap="20px">
               <Row>
-                <FormField
-                  name="cardNumber"
-                  type="text"
-                  placeholder="0000 0000 0000 0000"
-                  value={formatCardNumber(formData.cardNumber ?? "")}
-                  onChange={({ target }) =>
-                    handleTextChange(target.name, target.value)
-                  }
-                  endAdornment={
-                    <InputAdornment position="end">
-                      <CreditCardIcon />
-                    </InputAdornment>
-                  }
-                />
+                <FormSubtitle>Payment Details</FormSubtitle>
               </Row>
-              <Row gap="12px">
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DateField
-                    format="MM/YY"
-                    views={["month", "year"]}
-                    value={formData.expiration}
-                    onChange={(value: any) =>
-                      handleTextChange("expiration", value ?? "")
+              <Column gap="16px">
+                <Row>
+                  <FormField
+                    name="cardNumber"
+                    type="text"
+                    placeholder="0000 0000 0000 0000"
+                    value={formatCardNumber(formData.cardNumber ?? "")}
+                    onChange={({ target }) =>
+                      handleTextChange(target.name, target.value)
+                    }
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <CreditCardIcon />
+                      </InputAdornment>
                     }
                   />
-                </LocalizationProvider>
-                <FormField
-                  name="cvv"
-                  type="text"
-                  placeholder="CVV"
-                  // smarter card forms can handle 3 or 4 numbers based on Amex or not
-                  value={formatCVV(formData.cvv ?? "")}
-                  onChange={({ target }) =>
-                    handleTextChange(target.name, target.value)
-                  }
-                />
-              </Row>
+                </Row>
+                <Row gap="12px">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DateField
+                      format="MM/YY"
+                      views={["month", "year"]}
+                      value={formData.expiration}
+                      onChange={(value: any) =>
+                        handleTextChange("expiration", value ?? "")
+                      }
+                    />
+                  </LocalizationProvider>
+                  <FormField
+                    name="cvv"
+                    type="text"
+                    placeholder="CVV"
+                    // smarter card forms can handle 3 or 4 numbers based on Amex or not
+                    value={formatCVV(formData.cvv ?? "")}
+                    onChange={({ target }) =>
+                      handleTextChange(target.name, target.value)
+                    }
+                  />
+                </Row>
+              </Column>
             </Column>
             <PurchaseButton>
               <ButtonTitle>Get Tickets</ButtonTitle>

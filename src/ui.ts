@@ -24,5 +24,5 @@ export const Row = styled(Base)`
 
 export const Column = styled(Base)`
   flex-direction: column;
-  align-items: ${({ alignItems }) => alignItems ?? "flex-start"};
+  align-items: ${({ alignItems }) => alignItems ?? "stretch"};
 `;
