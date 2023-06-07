@@ -363,6 +363,7 @@ function BandForm({ band }: { band: TBand }) {
               </Column>
             </Column>
             <PurchaseButton>
+              {/*Typically a form submit input with data verification and an API post*/}
               <ButtonTitle>Get Tickets</ButtonTitle>
             </PurchaseButton>
           </TicketFormColumn>
